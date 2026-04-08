@@ -30,15 +30,18 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
-        run: uv pip install -e ".[dev]"
+        run: uv pip install -e ".[dev]" --system
 
       - name: Validate environment variables
+        env:
+          PLANE_API_KEY: ${{ secrets.PLANE_API_KEY }}
+          PLANE_WORKSPACE_SLUG: ${{ secrets.PLANE_WORKSPACE_SLUG }}
         run: |
-          if [ -z "${{ secrets.PLANE_API_KEY }}" ]; then
+          if [ -z "${{ env.PLANE_API_KEY }}" ]; then
             echo "Error: PLANE_API_KEY secret is required"
             exit 1
           fi
-          if [ -z "${{ secrets.PLANE_WORKSPACE_SLUG }}" ]; then
+          if [ -z "${{ env.PLANE_WORKSPACE_SLUG }}" ]; then
             echo "Error: PLANE_WORKSPACE_SLUG secret is required"
             exit 1
           fi
@@ -89,7 +92,7 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
-        run: uv pip install -e ".[dev]"
+        run: uv pip install -e ".[dev]" --system
 
       - name: Check code formatting
         run: uv run ruff format --check plane_mcp/ tests/
