@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: testing-env  # Uncomment if using environment secrets
     
-    services:
+    # services:
       # If you have a self-hosted Plane instance, you could run it here as a service
       # Example:
       # plane:
