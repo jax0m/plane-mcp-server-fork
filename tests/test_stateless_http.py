@@ -56,6 +56,7 @@ def header_mcp():
     )
 
 
+@pytest.mark.oauth
 class TestStatelessHttpOAuth:
     """Verify OAuth HTTP app works in stateless mode."""
 

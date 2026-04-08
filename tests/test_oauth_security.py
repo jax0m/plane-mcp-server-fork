@@ -78,6 +78,7 @@ def client(app):
     return TestClient(app, follow_redirects=False)
 
 
+@pytest.mark.oauth
 class TestOAuthRedirectAttack:
     """Replay the full attack chain and verify each fix blocks it.
 
