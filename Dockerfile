@@ -31,4 +31,3 @@ FROM base AS production
 # Users can override by passing different transport as CMD
 ENTRYPOINT ["python", "-m", "plane_mcp"]
 CMD ["http"]
-

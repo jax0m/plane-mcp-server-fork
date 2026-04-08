@@ -12,15 +12,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment: testing-env  # Uncomment if using environment secrets
-    
-    # services:
-      # If you have a self-hosted Plane instance, you could run it here as a service
-      # Example:
-      # plane:
-      #   image: planeorg/plane:latest
-      #   ports:
-      #     - 8000:8000
+    environment: testing-env # Uncomment if using environment secrets
 
     steps:
       - name: Checkout code
@@ -37,13 +29,19 @@ jobs:
       - name: Install dependencies
         run: uv pip install -e ".[dev]" --system
 
+      - name: Run ruff format check
+        run: uv run ruff format --check plane_mcp/
+
+      - name: Run ruff linter
+        run: uv run ruff check plane_mcp/
+
       - name: Start MCP Server (HTTP mode)
         run: |
           # Start the server in the background
           uv run python -m plane_mcp http &
           SERVER_PID=$!
           echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
-          
+
           # Wait for server to be ready (up to 30 seconds)
           for i in {1..30}; do
             if curl -s http://localhost:8211/mcp > /dev/null 2>&1; then
@@ -52,7 +50,7 @@ jobs:
             fi
             sleep 1
           done
-          
+
           # Verify server is running
           if ! curl -s http://localhost:8211/mcp > /dev/null 2>&1; then
             echo "Error: MCP Server failed to start"
@@ -97,26 +95,3 @@ jobs:
             kill ${{ env.SERVER_PID }} 2>/dev/null || true
             wait ${{ env.SERVER_PID }} 2>/dev/null || true
           fi
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-
-      - name: Install dependencies
-        run: uv pip install -e ".[dev]" --system
-
-      - name: Run ruff format check
-        run: uv run ruff format --check plane_mcp/
-
-      - name: Run ruff linter
-        run: uv run ruff check plane_mcp/

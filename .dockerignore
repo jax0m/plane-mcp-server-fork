@@ -39,4 +39,3 @@ htmlcov/
 .codacy/
 .cursor/
 test_client.py
-

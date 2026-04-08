@@ -72,13 +72,13 @@ The workflow (`.github/workflows/test.yml`) runs:
 
 ### Required GitHub Secrets
 
-| Secret | Description | Required For |
-|--------|-------------|--------------|
-| `PLANE_API_KEY` | Plane API key | HTTP & Integration tests |
-| `PLANE_WORKSPACE_SLUG` | Workspace slug | HTTP & Integration tests |
-| `PLANE_BASE_URL` | Plane API URL (optional) | HTTP & Integration tests |
-| `PLANE_OAUTH_PROVIDER_CLIENT_ID` | OAuth client ID | OAuth tests |
-| `PLANE_OAUTH_PROVIDER_CLIENT_SECRET` | OAuth client secret | OAuth tests |
+| Secret                               | Description              | Required For             |
+| ------------------------------------ | ------------------------ | ------------------------ |
+| `PLANE_API_KEY`                      | Plane API key            | HTTP & Integration tests |
+| `PLANE_WORKSPACE_SLUG`               | Workspace slug           | HTTP & Integration tests |
+| `PLANE_BASE_URL`                     | Plane API URL (optional) | HTTP & Integration tests |
+| `PLANE_OAUTH_PROVIDER_CLIENT_ID`     | OAuth client ID          | OAuth tests              |
+| `PLANE_OAUTH_PROVIDER_CLIENT_SECRET` | OAuth client secret      | OAuth tests              |
 
 ### Secret Setup
 
@@ -93,6 +93,7 @@ The workflow (`.github/workflows/test.yml`) runs:
 **File**: `tests/test_integration.py`
 
 Tests the full workflow:
+
 - Create project
 - Create work items
 - Update work items (parent relationships)
@@ -101,11 +102,13 @@ Tests the full workflow:
 - Cleanup (delete resources)
 
 **Requirements**:
+
 - Live Plane instance
 - Valid API key
 - Workspace slug
 
 **Run**:
+
 ```bash
 uv run pytest tests/test_integration.py -v
 ```
@@ -115,15 +118,18 @@ uv run pytest tests/test_integration.py -v
 **File**: `tests/test_stateless_http.py`
 
 Tests HTTP transport modes:
+
 - OAuth HTTP app with stateless flag
 - Header-based auth HTTP app
 - Endpoint responses
 
 **Requirements**:
+
 - MCP server must be running
 - No OAuth credentials required for header auth tests
 
 **Run**:
+
 ```bash
 # Start server in background
 uv run python -m plane_mcp http &
@@ -137,16 +143,19 @@ uv run pytest tests/test_stateless_http.py -v
 **File**: `tests/test_oauth_security.py`
 
 Tests OAuth security features:
+
 - Redirect URI validation
 - Attack prevention (OAuth redirect attacks)
 - CORS configuration
 - Malicious URI rejection
 
 **Requirements**:
+
 - OAuth credentials configured
 - Tests run against in-memory OAuth provider (no external Plane needed)
 
 **Run** (requires OAuth credentials):
+
 ```bash
 export PLANE_OAUTH_PROVIDER_CLIENT_ID=your_client_id
 export PLANE_OAUTH_PROVIDER_CLIENT_SECRET=your_client_secret
@@ -160,6 +169,7 @@ uv run pytest tests/test_oauth_security.py -v
 **Error**: `ConnectionRefusedError` or timeout
 
 **Solution**: Ensure MCP server is running:
+
 ```bash
 uv run python -m plane_mcp http &
 sleep 5
@@ -171,6 +181,7 @@ curl http://localhost:8211/mcp
 **Message**: "OAuth credentials not configured"
 
 **Solution**: Set OAuth environment variables:
+
 ```bash
 export PLANE_OAUTH_PROVIDER_CLIENT_ID=your_client_id
 export PLANE_OAUTH_PROVIDER_CLIENT_SECRET=your_client_secret
@@ -179,11 +190,13 @@ export PLANE_OAUTH_PROVIDER_CLIENT_SECRET=your_client_secret
 ### Integration Tests Fail
 
 **Common causes**:
+
 1. Invalid API key
 2. Workspace doesn't exist
 3. Plane API is unreachable
 
 **Debug**:
+
 ```bash
 # Test direct API connection
 curl -H "Authorization: Bearer $PLANE_TEST_API_KEY" \
@@ -214,6 +227,7 @@ services:
 ```
 
 Then update test configuration:
+
 ```bash
 PLANE_TEST_BASE_URL=http://localhost:8000
 PLANE_TEST_API_KEY=your_test_key

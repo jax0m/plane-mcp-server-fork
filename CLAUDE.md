@@ -39,6 +39,7 @@ ruff check plane_mcp/
 ### Entry Point & Transport Modes
 
 `plane_mcp/__main__.py` parses a positional arg (`stdio`, `http`, or `sse`) and launches the corresponding server:
+
 - **stdio**: Requires `PLANE_API_KEY` + `PLANE_WORKSPACE_SLUG` env vars. Runs locally.
 - **http**: Starts on port 8211 with two auth endpoints — OAuth (`/oauth/mcp`) and header-based PAT (`/http/api-key/mcp`).
 - **sse**: Legacy OAuth-only SSE transport.
@@ -58,9 +59,10 @@ Three factory functions (`get_oauth_mcp`, `get_header_mcp`, `get_stdio_mcp`) eac
 
 ### Tools (`tools/`)
 
-19 tool modules organized by Plane domain (projects, work_items, cycles, modules, etc.), totaling 55+ tools. Each module exports a `register_*_tools(mcp: FastMCP)` function called from `tools/__init__.py`.
+19 tool modules organized by Plane domain (projects, work*items, cycles, modules, etc.), totaling 55+ tools. Each module exports a `register*\*\_tools(mcp: FastMCP)`function called from`tools/**init**.py`.
 
 **Tool pattern:**
+
 ```python
 def register_*_tools(mcp: FastMCP) -> None:
     @mcp.tool()
@@ -78,11 +80,11 @@ Integration tests in `tests/test_integration.py` use `FastMCP.Client` with `Stre
 
 ## Key Environment Variables
 
-| Variable | Required For | Purpose |
-|---|---|---|
-| `PLANE_API_KEY` | stdio | API key for authentication |
-| `PLANE_WORKSPACE_SLUG` | stdio | Target workspace |
-| `PLANE_BASE_URL` | all (default: https://api.plane.so) | Plane API URL |
-| `PLANE_INTERNAL_BASE_URL` | http/sse (optional) | Internal URL for server-to-server calls |
-| `REDIS_HOST` / `REDIS_PORT` | http/sse (optional) | Token storage (falls back to in-memory) |
-| `PLANE_OAUTH_PROVIDER_*` | http/sse OAuth | OAuth client credentials and base URL |
+| Variable                    | Required For                        | Purpose                                 |
+| --------------------------- | ----------------------------------- | --------------------------------------- |
+| `PLANE_API_KEY`             | stdio                               | API key for authentication              |
+| `PLANE_WORKSPACE_SLUG`      | stdio                               | Target workspace                        |
+| `PLANE_BASE_URL`            | all (default: https://api.plane.so) | Plane API URL                           |
+| `PLANE_INTERNAL_BASE_URL`   | http/sse (optional)                 | Internal URL for server-to-server calls |
+| `REDIS_HOST` / `REDIS_PORT` | http/sse (optional)                 | Token storage (falls back to in-memory) |
+| `PLANE_OAUTH_PROVIDER_*`    | http/sse OAuth                      | OAuth client credentials and base URL   |
