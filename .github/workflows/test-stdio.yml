@@ -36,15 +36,8 @@ jobs:
         env:
           PLANE_API_KEY: ${{ secrets.PLANE_API_KEY }}
           PLANE_WORKSPACE_SLUG: ${{ secrets.PLANE_WORKSPACE_SLUG }}
+        if: ${{ env.PLANE_API_KEY != '' && env.PLANE_WORKSPACE_SLUG != '' }}
         run: |
-          if [ -z "${{ env.PLANE_API_KEY }}" ]; then
-            echo "Error: PLANE_API_KEY secret is required"
-            exit 1
-          fi
-          if [ -z "${{ env.PLANE_WORKSPACE_SLUG }}" ]; then
-            echo "Error: PLANE_WORKSPACE_SLUG secret is required"
-            exit 1
-          fi
           echo "✓ Required secrets are configured"
 
       - name: Run stdio integration tests
