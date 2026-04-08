@@ -13,14 +13,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     environment: testing-env  # Uncomment if using environment secrets
-    
-    services:
-      # If you have a self-hosted Plane instance, you could run it here as a service
-      # Example:
-      # plane:
-      #   image: planeorg/plane:latest
-      #   ports:
-      #     - 8000:8000
 
     steps:
       - name: Checkout code
@@ -35,7 +27,13 @@ jobs:
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Install dependencies
-        run: uv pip install -e ".[dev]"
+        run: uv pip install -e ".[dev]" --system
+
+      - name: Run ruff format check
+        run: uv run ruff format --check plane_mcp/
+
+      - name: Run ruff linter
+        run: uv run ruff check plane_mcp/
 
       - name: Start MCP Server (HTTP mode)
         run: |
@@ -76,13 +74,13 @@ jobs:
             -m "not oauth"
 
       - name: Run OAuth tests (if credentials available)
-        if: secrets.PLANE_OAUTH_PROVIDER_CLIENT_ID != '' && secrets.PLANE_OAUTH_PROVIDER_CLIENT_SECRET != ''
         env:
           PLANE_OAUTH_PROVIDER_CLIENT_ID: ${{ secrets.PLANE_OAUTH_PROVIDER_CLIENT_ID }}
           PLANE_OAUTH_PROVIDER_CLIENT_SECRET: ${{ secrets.PLANE_OAUTH_PROVIDER_CLIENT_SECRET }}
           PLANE_OAUTH_PROVIDER_BASE_URL: http://localhost:8211
-          PLANE_BASE_URL: ${{ secrets.PLANE_BASE_URL || 'https://api.plane.so' }}
-          PLANE_INTERNAL_BASE_URL: ${{ secrets.PLANE_INTERNAL_BASE_URL || 'https://api.plane.so' }}
+          PLANE_BASE_URL: ${{ secrets.PLANE_BASE_URL}}
+          PLANE_INTERNAL_BASE_URL: ${{ secrets.PLANE_INTERNAL_BASE_URL}}
+        if: ${{ env.PLANE_OAUTH_PROVIDER_CLIENT_ID != '' && env.PLANE_OAUTH_PROVIDER_CLIENT_SECRET != '' }}
         run: |
           # Run only OAuth tests
           uv run pytest \
@@ -97,26 +95,3 @@ jobs:
             kill ${{ env.SERVER_PID }} 2>/dev/null || true
             wait ${{ env.SERVER_PID }} 2>/dev/null || true
           fi
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-
-      - name: Install dependencies
-        run: uv pip install -e ".[dev]"
-
-      - name: Run ruff format check
-        run: uv run ruff format --check plane_mcp/
-
-      - name: Run ruff linter
-        run: uv run ruff check plane_mcp/

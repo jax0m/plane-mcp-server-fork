@@ -56,3 +56,6 @@ dmypy.json
 
 # Ignore cursor AI rules
 .cursor/rules/codacy.mdc
+
+# ruff
+.ruff_cache
