@@ -2,17 +2,17 @@ name: Run Tests
 
 on:
   push:
-    branches: [ main, develop, master ]
+    branches: [main, develop, master]
   pull_request:
-    branches: [ main, develop, master ]
+    branches: [main, develop, master]
 
 env:
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: "3.11"
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment: testing-env  # Uncomment if using environment secrets
+    environment: testing-env # Uncomment if using environment secrets
 
     steps:
       - name: Checkout code
@@ -41,7 +41,7 @@ jobs:
           uv run python -m plane_mcp http &
           SERVER_PID=$!
           echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
-          
+
           # Wait for server to be ready (up to 30 seconds)
           for i in {1..30}; do
             if curl -s http://localhost:8211/mcp > /dev/null 2>&1; then
@@ -50,7 +50,7 @@ jobs:
             fi
             sleep 1
           done
-          
+
           # Verify server is running
           if ! curl -s http://localhost:8211/mcp > /dev/null 2>&1; then
             echo "Error: MCP Server failed to start"
