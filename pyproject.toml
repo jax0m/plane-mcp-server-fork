@@ -52,3 +52,9 @@ quote-style = "double"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
+markers = [
+    "oauth: Tests requiring OAuth credentials (skipped if not configured)",
+    "integration: Full integration tests against live Plane API",
+    "http: HTTP transport mode tests",
+]
+addopts = "-v --tb=short --strict-markers"
