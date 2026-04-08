@@ -4,7 +4,7 @@ import json
 import logging
 import os
 import sys
-from contextlib import asynccontextmanager, aclosing
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from enum import Enum
 
@@ -135,10 +135,12 @@ def main() -> None:
         # Build app routes with lifespan
         # For header-only mode, use header_app's lifespan
         if oauth_enabled:
+
             async def app_lifespan(app):
                 async with combined_lifespan(oauth_app, header_app, sse_app):
                     yield
         else:
+
             async def app_lifespan(app):
                 async with header_app.lifespan(header_app):
                     yield

@@ -2,13 +2,13 @@ name: Stdio Integration Tests
 
 on:
   push:
-    branches: [ main, develop, master ]
+    branches: [main, develop, master]
   pull_request:
-    branches: [ main, develop, master ]
+    branches: [main, develop, master]
   workflow_dispatch:
 
 env:
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: "3.11"
 
 jobs:
   stdio-tests:
@@ -52,7 +52,7 @@ jobs:
         run: |
           # Make test script executable
           chmod +x scripts/test_stdio.sh
-          
+
           # Run the stdio test suite
           ./scripts/test_stdio.sh -v
 
