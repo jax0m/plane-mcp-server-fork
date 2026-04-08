@@ -77,6 +77,40 @@ else
 fi
 
 echo ""
+echo "Environment Validation:"
+
+# Check if running in GitHub Actions
+if [ -n "$GITHUB_ACTIONS" ]; then
+    echo "  ✓ Running in GitHub Actions environment"
+    echo "  ✓ Environment variables loaded from GitHub Secrets"
+else
+    echo "  PLANE_BASE_URL: ${PLANE_BASE_URL:-https://api.plane.so}"
+    echo "  PLANE_WORKSPACE_SLUG: $PLANE_WORKSPACE_SLUG"
+    echo "  PLANE_API_KEY: ${PLANE_API_KEY:0:10}..."
+fi
+
+# Validate environment variables are not defaults/placeholders
+if [ "$PLANE_API_KEY" = "your_api_key_here" ] || [ -z "$PLANE_API_KEY" ]; then
+    echo ""
+    echo "❌ ERROR: PLANE_API_KEY is not configured or is using default value"
+    echo "   Please set PLANE_API_KEY to your actual API key"
+    exit 1
+fi
+
+if [ "$PLANE_WORKSPACE_SLUG" = "your_workspace_slug_here" ] || [ -z "$PLANE_WORKSPACE_SLUG" ]; then
+    echo ""
+    echo "❌ ERROR: PLANE_WORKSPACE_SLUG is not configured or is using default value"
+    echo "   Please set PLANE_WORKSPACE_SLUG to your actual workspace slug"
+    exit 1
+fi
+
+if [ "$PLANE_BASE_URL" = "https://api.plane.so" ]; then
+    echo "  ⚠ Note: Using default PLANE_BASE_URL (https://api.plane.so)"
+fi
+
+echo "  ✓ All required environment variables validated"
+
+echo ""
 echo "Starting MCP Server for integration tests..."
 echo ""
 
