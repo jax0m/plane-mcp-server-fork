@@ -2,12 +2,12 @@ name: Run Tests
 
 on:
   push:
-    branches: [ main, develop, master ]
+    branches: [main, develop, master]
   pull_request:
-    branches: [ main, develop, master ]
+    branches: [main, develop, master]
 
 env:
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: "3.11"
 
 jobs:
   test:
