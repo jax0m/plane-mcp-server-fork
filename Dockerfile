@@ -1,5 +1,5 @@
 # Use Python 3.11 as base image
-FROM python:3.11-slim
+FROM python:3.11-slim AS base
 
 # Set working directory
 WORKDIR /app
@@ -26,6 +26,7 @@ EXPOSE 8211
 # Set environment variables with defaults
 ENV FASTMCP_PORT=8211
 
+FROM base AS production
 # Default to streamable-http transport, but allow override via command
 # Users can override by passing different transport as CMD
 ENTRYPOINT ["python", "-m", "plane_mcp"]

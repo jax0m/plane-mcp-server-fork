@@ -1,0 +1,45 @@
+{
+    "name": "plane-mcp-server devcontainer",
+    "build": {
+        "dockerfile": "../Dockerfile",
+        "context": ".."
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:2": {
+		    "username": "app",
+            "configureZshAsDefaultShell": true,
+            "ohMyZshTheme": "agnoster",
+            "ohMyZshPlugins": [
+                "git",
+                "gh",
+                "history",
+                "docker",
+                "docker-compose",
+                "virtualenv",
+                "vscode"
+            ]
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "esbenp.prettier-vscode",
+                "bierner.markdown-preview-github-styles",
+                "formulahendry.auto-rename-tag",
+                "streetsidesoftware.code-spell-checker",
+                "bierner.markdown-mermaid",
+                "github.vscode-pull-request-github",
+                "github.vscode-github-actions",
+                "ms-vscode-remote.remote-containers"
+            ]
+        }
+    },
+    "forwardPorts": [8211],
+    "portsAttributes": {
+        "8211": {
+            "onAutoForward": "silent",
+            "label": "FastMCP"
+        }
+     },
+     "postCreateCommand": "chown -R app /workspaces"
+}
