@@ -35,17 +35,17 @@ jobs:
 
       - name: Validate environment variables
         env:
-          PLANE_API_KEY: ${{ secrets.PLANE_API_KEY }}
-          PLANE_WORKSPACE_SLUG: ${{ secrets.PLANE_WORKSPACE_SLUG }}
+          PLANE_API_KEY: ${{ secrets.PLANE_TEST_API_KEY }}
+          PLANE_WORKSPACE_SLUG: ${{ secrets.PLANE_TEST_WORKSPACE_SLUG }}
         if: ${{ env.PLANE_API_KEY != '' && env.PLANE_WORKSPACE_SLUG != '' }}
         run: |
           echo "✓ Required secrets are configured"
 
       - name: Run stdio integration tests
         env:
-          PLANE_API_KEY: ${{ secrets.PLANE_API_KEY }}
-          PLANE_WORKSPACE_SLUG: ${{ secrets.PLANE_WORKSPACE_SLUG }}
-          PLANE_BASE_URL: ${{ secrets.PLANE_BASE_URL || 'https://api.plane.so' }}
+          PLANE_API_KEY: ${{ secrets.PLANE_TEST_API_KEY }}
+          PLANE_WORKSPACE_SLUG: ${{ secrets.PLANE_TEST_WORKSPACE_SLUG }}
+          PLANE_BASE_URL: ${{ secrets.PLANE_TEST_BASE_URL }}
         run: |
           # Make test script executable
           chmod +x scripts/test_stdio.sh
