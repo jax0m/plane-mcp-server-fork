@@ -62,9 +62,10 @@ markers = [
     "oauth: Tests requiring OAuth credentials (skipped if not configured)",
     "integration: Full integration tests against live Plane API",
     "http: HTTP transport mode tests",
+    "stdio: Stdio transport mode tests",
+    "transport(type): Specify transport type for test",
 ]
-addopts = "-v --tb=short --strict-markers"
+addopts = "-v --tb=short --strict-markers --asyncio-mode=auto"
 
 [tool.pytest-asyncio]
 default_fixture_loop_scope = "function"
-asyncio_mode = "auto"

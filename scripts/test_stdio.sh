@@ -1,6 +1,6 @@
 #!/bin/bash
 # Stdio-based test runner for Plane MCP Server
-# Environment variable priority: OS env vars > .env > .env.test
+# This runs the MCP server in stdio mode and tests communicate via stdin/stdout
 
 set -e
 
@@ -13,56 +13,58 @@ echo "=========================================="
 echo "Plane MCP Server - Stdio Test Runner"
 echo "=========================================="
 
-# Load a single variable from a file if not already set
-# Args: $1=var_name, $2=file_path
-load_var_from_file() {
-    local var_name="$1"
-    local file="$2"
-
-    # Only try to load if variable is not already set
-    if [ -n "${!var_name+x}" ]; then
-        return 0
-    fi
-
+# Load environment variables in priority order
+load_env_file() {
+    local file=$1
     if [ -f "$file" ]; then
-        local value
-        value=$(grep -E "^${var_name}=" "$file" 2>/dev/null | head -1 | cut -d'=' -f2- | xargs 2>/dev/null || true)
-        if [ -n "$value" ]; then
-            export "$var_name=$value"
-            return 0
-        fi
+        echo "Found $file, loading environment variables..."
+        while IFS='=' read -r key value; do
+            [[ "$key" =~ ^[[:space:]]*# ]] && continue
+            [[ -z "$key" ]] && continue
+            key=$(echo "$key" | xargs)
+            value=$(echo "$value" | xargs)
+            if [ -z "${!key+x}" ]; then
+                export "$key=$value"
+                echo "  Loaded: $key"
+            else
+                echo "  Skipped (already set): $key"
+            fi
+        done < "$file"
+        return 0
     fi
     return 1
 }
 
-# Load variables from .env files with fallback
-# Priority: OS env vars > .env > .env.test
-load_env_vars() {
-    # PLANE_API_KEY
-    load_var_from_file "PLANE_API_KEY" ".env" || load_var_from_file "PLANE_API_KEY" ".env.test" || true
-    load_var_from_file "PLANE_TEST_API_KEY" ".env" || load_var_from_file "PLANE_TEST_API_KEY" ".env.test" || true
+if ! load_env_file ".env"; then
+    if ! load_env_file ".env.test"; then
+        echo "Warning: No .env or .env.test file found."
+    fi
+fi
 
-    # PLANE_WORKSPACE_SLUG
-    load_var_from_file "PLANE_WORKSPACE_SLUG" ".env" || load_var_from_file "PLANE_WORKSPACE_SLUG" ".env.test" || true
-    load_var_from_file "PLANE_TEST_WORKSPACE_SLUG" ".env" || load_var_from_file "PLANE_TEST_WORKSPACE_SLUG" ".env.test" || true
+# Map test environment variables to stdio mode variables
+# PLANE_TEST_* -> PLANE_*
+if [ -z "$PLANE_API_KEY" ] && [ -n "$PLANE_TEST_API_KEY" ]; then
+    export PLANE_API_KEY="$PLANE_TEST_API_KEY"
+fi
 
-    # PLANE_BASE_URL
-    load_var_from_file "PLANE_BASE_URL" ".env" || load_var_from_file "PLANE_BASE_URL" ".env.test" || true
-    load_var_from_file "PLANE_TEST_BASE_URL" ".env" || load_var_from_file "PLANE_TEST_BASE_URL" ".env.test" || true
+if [ -z "$PLANE_WORKSPACE_SLUG" ] && [ -n "$PLANE_TEST_WORKSPACE_SLUG" ]; then
+    export PLANE_WORKSPACE_SLUG="$PLANE_TEST_WORKSPACE_SLUG"
+fi
 
-    # PLANE_OAUTH_PROVIDER_CLIENT_ID
-    load_var_from_file "PLANE_OAUTH_PROVIDER_CLIENT_ID" ".env" || load_var_from_file "PLANE_OAUTH_PROVIDER_CLIENT_ID" ".env.test" || true
+if [ -z "$PLANE_BASE_URL" ] && [ -n "$PLANE_TEST_BASE_URL" ]; then
+    export PLANE_BASE_URL="$PLANE_TEST_BASE_URL"
+fi
 
-    # PLANE_OAUTH_PROVIDER_CLIENT_SECRET
-    load_var_from_file "PLANE_OAUTH_PROVIDER_CLIENT_SECRET" ".env" || load_var_from_file "PLANE_OAUTH_PROVIDER_CLIENT_SECRET" ".env.test" || true
-}
+# Validate required variables
+if [ -z "$PLANE_API_KEY" ]; then
+    echo "Error: PLANE_API_KEY is required for stdio mode"
+    exit 1
+fi
 
-load_env_vars
-
-# Map PLANE_TEST_* to PLANE_* if needed (only if PLANE_* not set)
-[ -n "$PLANE_TEST_API_KEY" ] && [ -z "$PLANE_API_KEY" ] && export PLANE_API_KEY="$PLANE_TEST_API_KEY"
-[ -n "$PLANE_TEST_WORKSPACE_SLUG" ] && [ -z "$PLANE_WORKSPACE_SLUG" ] && export PLANE_WORKSPACE_SLUG="$PLANE_TEST_WORKSPACE_SLUG"
-[ -n "$PLANE_TEST_BASE_URL" ] && [ -z "$PLANE_BASE_URL" ] && export PLANE_BASE_URL="$PLANE_TEST_BASE_URL"
+if [ -z "$PLANE_WORKSPACE_SLUG" ]; then
+    echo "Error: PLANE_WORKSPACE_SLUG is required for stdio mode"
+    exit 1
+fi
 
 echo ""
 echo "Environment Validation:"
@@ -72,10 +74,9 @@ if [ -n "$GITHUB_ACTIONS" ]; then
     echo "  ✓ Running in GitHub Actions environment"
     echo "  ✓ Environment variables loaded from GitHub Secrets"
 else
-    echo "  Variable Sources:"
-    echo "    PLANE_BASE_URL: ${PLANE_BASE_URL:-https://api.plane.so}"
-    echo "    PLANE_WORKSPACE_SLUG: $PLANE_WORKSPACE_SLUG"
-    echo "    PLANE_API_KEY: ${PLANE_API_KEY:0:10}..."
+    echo "  PLANE_BASE_URL: ${PLANE_BASE_URL:-https://api.plane.so}"
+    echo "  PLANE_WORKSPACE_SLUG: $PLANE_WORKSPACE_SLUG"
+    echo "  PLANE_API_KEY: ${PLANE_API_KEY:0:10}..."
 fi
 
 # Validate environment variables are not defaults/placeholders
@@ -98,22 +99,37 @@ if [ "$PLANE_BASE_URL" = "https://api.plane.so" ]; then
 fi
 
 echo "  ✓ All required environment variables validated"
-
-# Display OAuth status
-if [ -n "$PLANE_OAUTH_PROVIDER_CLIENT_ID" ] && [ -n "$PLANE_OAUTH_PROVIDER_CLIENT_SECRET" ]; then
-    echo "  ✓ OAuth credentials configured - OAuth tests will run"
-else
-    echo "  ⊘ OAuth credentials not configured - OAuth tests will be skipped"
-fi
-
 echo ""
 echo "Running stdio-based integration tests..."
 echo ""
 
-# Run the stdio tests
+# Run new modular transport-agnostic tests
+echo "=========================================="
+echo "1. Running modular transport-agnostic tests"
+echo "=========================================="
+uv run pytest tests/test_modules/ -v --tb=short "$@"
+MODULAR_RESULT=$?
+
+# Run legacy stdio tests (keeping for now until full migration)
+echo ""
+echo "=========================================="
+echo "2. Running legacy stdio integration tests"
+echo "=========================================="
 uv run pytest tests/test_stdio_integration.py -v --tb=short "$@"
+LEGACY_RESULT=$?
+
+# Exit with failure if either test suite failed
+if [ $MODULAR_RESULT -ne 0 ] || [ $LEGACY_RESULT -ne 0 ]; then
+    echo ""
+    echo "=========================================="
+    echo "Some tests failed!"
+    echo "=========================================="
+    exit 1
+fi
 
 echo ""
 echo "=========================================="
-echo "Stdio test run complete!"
+echo "All stdio test suites passed!"
+echo "  ✓ Modular transport-agnostic tests"
+echo "  ✓ Legacy stdio integration tests"
 echo "=========================================="
