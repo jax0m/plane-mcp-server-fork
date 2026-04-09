@@ -1,16 +1,16 @@
 """
-Stdio-based integration tests for Plane MCP Server.
+⚠️ DEPRECATED: Legacy stdio integration tests.
 
-These tests run the MCP server in stdio mode and communicate via stdin/stdout.
-No HTTP server needed - tests spawn the server process directly.
+These tests have been superseded by the modular transport-agnostic tests
+in tests/test_modules/. This file is maintained for backward compatibility.
 
-Each test follows a lifecycle pattern:
-1. Check for existing test resources (cleanup if found from previous run)
-2. Create test resources
-3. Verify creation was successful
-4. Test sub-functions and relationships
-5. Clean up (delete/archive) test resources
-6. Verify cleanup was successful
+For new tests, use tests/test_modules/ which provides:
+- Transport-agnostic testing (stdio, http, oauth)
+- Better code organization
+- Automatic cleanup via ResourceCleanup context manager
+- Leftover cleanup from previous failed runs
+
+Legacy tests will be removed in a future release.
 
 Environment Variables Required:
     PLANE_API_KEY: API key for authentication
@@ -87,6 +87,7 @@ def test_id():
 
 
 @pytest.mark.integration
+@pytest.mark.legacy
 @pytest.mark.asyncio
 async def test_tools_list(server_params):
     """Test that we can list available tools."""
@@ -107,6 +108,7 @@ async def test_tools_list(server_params):
 
 
 @pytest.mark.integration
+@pytest.mark.legacy
 @pytest.mark.asyncio
 async def test_project_lifecycle(server_params, test_id):
     """
@@ -196,6 +198,7 @@ async def test_project_lifecycle(server_params, test_id):
 
 
 @pytest.mark.integration
+@pytest.mark.legacy
 @pytest.mark.asyncio
 async def test_work_item_lifecycle(server_params, test_id):
     """
@@ -326,6 +329,7 @@ async def test_work_item_lifecycle(server_params, test_id):
 
 
 @pytest.mark.integration
+@pytest.mark.legacy
 @pytest.mark.asyncio
 async def test_tool_availability(server_params):
     """

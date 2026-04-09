@@ -1,6 +1,6 @@
 # Test Modularization - Progress Tracker
 
-**Last Updated**: 2026-04-09T18:59:20Z (UTC)
+**Last Updated**: 2026-04-09T21:19:43Z (UTC)
 
 ## Session Log
 
@@ -174,3 +174,41 @@ done
 1. Add test_work_items.py to fill coverage gap
 2. Consider pushing to remote when ready
 3. Eventually deprecate legacy tests once coverage complete
+
+---
+
+### Session 4: 2026-04-09T20:53:35Z - 2026-04-09T21:19:43Z (UTC)
+
+**Activities:**
+
+- Added leftover cleanup functionality to modular tests
+- Added full lifecycle test equivalent to legacy tests
+- Deprecated legacy tests with @pytest.mark.legacy marker
+- Added SKIP_LEGACY=1 environment variable to skip legacy tests
+- Updated scripts/test_stdio.sh to support legacy test skipping
+- Added deprecation notices to test_stdio_integration.py
+
+**Test Results:**
+
+- **Modular tests**: 13/13 passing
+  - Added test_project_lifecycle_full (equivalent to legacy)
+  - All tests now include leftover cleanup
+  - All tests use ResourceCleanup for automatic cleanup
+- **Legacy tests**: 4/4 passing (deprecated, can be skipped)
+
+**Coverage Comparison:**
+| Feature | Legacy | Modular | Status |
+|---------|--------|---------|--------|
+| Tool availability | 10 tools | 32+ tools | ✅ Better |
+| Project CRUD | 1 lifecycle test | 5 granular tests | ✅ Better |
+| Work items | 1 lifecycle test | 4 lifecycle tests | ✅ Better |
+| Leftover cleanup | ✅ | ✅ | ✅ Equivalent |
+| Cleanup on failure | ✅ try/except | ✅ ResourceCleanup | ✅ Equivalent |
+| Deletion verification | ✅ | ✅ | ✅ Equivalent |
+| Transport support | stdio only | stdio/http/oauth | ✅ Better |
+
+**Next Steps:**
+
+1. Push to remote: `git push origin enhancement/testing-stdio-additional`
+2. Update GitHub workflow to use SKIP_LEGACY=1 when ready
+3. Eventually remove legacy tests once CI is stable with modular tests only

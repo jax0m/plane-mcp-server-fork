@@ -68,6 +68,15 @@ def format_resource_name(prefix: str, test_id: str) -> str:
     return f"{prefix}-{test_id}"
 
 
+def get_cleanup_prefix() -> str:
+    """Get the prefix used for test resources.
+
+    Returns:
+        Prefix string used to identify test resources
+    """
+    return "TEST"
+
+
 class ResourceCleanup:
     """Context manager for automatic test resource cleanup.
 
@@ -150,3 +159,40 @@ class ResourceCleanup:
     def add_milestone(self, milestone_id: str, project_id: str) -> None:
         """Track a milestone for cleanup."""
         self.milestones.append((milestone_id, project_id))
+
+
+async def cleanup_leftover_projects(client: AbstractTestClient, prefix: str = "TEST") -> int:
+    """Clean up leftover test projects from previous failed runs.
+
+    Args:
+        client: Transport-agnostic test client
+        prefix: Prefix to identify test projects (default: "TEST")
+
+    Returns:
+        Number of projects cleaned up
+    """
+    cleaned_count = 0
+
+    try:
+        list_result = await client.call_tool("list_projects", {})
+        projects = extract_result(list_result)
+
+        if isinstance(projects, dict):
+            projects = projects.get("results", [])
+
+        for project in projects:
+            if isinstance(project, dict):
+                name = project.get("name", "")
+                if name.startswith(f"{prefix}-"):
+                    project_id = project.get("id")
+                    if project_id:
+                        try:
+                            await client.call_tool("delete_project", {"project_id": project_id})
+                            print(f"  ✓ Cleaned up leftover project: {name}")
+                            cleaned_count += 1
+                        except Exception as e:
+                            print(f"  ⊘ Could not delete project {name}: {e}")
+    except Exception as e:
+        print(f"  ⊘ Error during leftover cleanup: {e}")
+
+    return cleaned_count

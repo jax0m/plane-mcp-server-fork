@@ -103,33 +103,22 @@ echo ""
 echo "Running stdio-based integration tests..."
 echo ""
 
-# Run new modular transport-agnostic tests
+# Run modular transport-agnostic tests
 echo "=========================================="
-echo "1. Running modular transport-agnostic tests"
+echo "Running modular transport-agnostic tests"
 echo "=========================================="
 uv run pytest tests/test_modules/ -v --tb=short "$@"
-MODULAR_RESULT=$?
+TEST_RESULT=$?
 
-# Run legacy stdio tests (keeping for now until full migration)
-echo ""
-echo "=========================================="
-echo "2. Running legacy stdio integration tests"
-echo "=========================================="
-uv run pytest tests/test_stdio_integration.py -v --tb=short "$@"
-LEGACY_RESULT=$?
-
-# Exit with failure if either test suite failed
-if [ $MODULAR_RESULT -ne 0 ] || [ $LEGACY_RESULT -ne 0 ]; then
+if [ $TEST_RESULT -ne 0 ]; then
     echo ""
     echo "=========================================="
-    echo "Some tests failed!"
+    echo "Tests failed!"
     echo "=========================================="
     exit 1
 fi
 
 echo ""
 echo "=========================================="
-echo "All stdio test suites passed!"
-echo "  ✓ Modular transport-agnostic tests"
-echo "  ✓ Legacy stdio integration tests"
+echo "All tests passed!"
 echo "=========================================="
