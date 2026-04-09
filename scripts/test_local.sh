@@ -31,15 +31,15 @@ trap cleanup EXIT INT TERM
 load_var_from_file() {
     local var_name="$1"
     local file="$2"
-    
+
     # Only try to load if variable is not already set
     if [ -n "${!var_name+x}" ]; then
-        return 0  # Already set, skip
+        return 0
     fi
-    
+
     if [ -f "$file" ]; then
-        # Extract the value for this specific variable
-        local value=$(grep -E "^${var_name}=" "$file" 2>/dev/null | head -1 | cut -d'=' -f2- | xargs)
+        local value
+        value=$(grep -E "^${var_name}=" "$file" 2>/dev/null | head -1 | cut -d'=' -f2- | xargs 2>/dev/null || true)
         if [ -n "$value" ]; then
             export "$var_name=$value"
             return 0
@@ -48,65 +48,34 @@ load_var_from_file() {
     return 1
 }
 
-# Load each required variable individually with proper precedence
+# Load variables from .env files with fallback
 # Priority: OS env vars > .env > .env.test
+load_env_vars() {
+    # PLANE_API_KEY
+    load_var_from_file "PLANE_API_KEY" ".env" || load_var_from_file "PLANE_API_KEY" ".env.test" || true
+    load_var_from_file "PLANE_TEST_API_KEY" ".env" || load_var_from_file "PLANE_TEST_API_KEY" ".env.test" || true
 
-# PLANE_API_KEY / PLANE_TEST_API_KEY
-if [ -z "$PLANE_API_KEY" ]; then
-    if ! load_var_from_file "PLANE_API_KEY" ".env"; then
-        if ! load_var_from_file "PLANE_API_KEY" ".env.test"; then
-            if ! load_var_from_file "PLANE_TEST_API_KEY" ".env"; then
-                load_var_from_file "PLANE_TEST_API_KEY" ".env.test"
-            fi
-        fi
-    fi
-    # Map PLANE_TEST_API_KEY to PLANE_API_KEY if needed
-    if [ -n "$PLANE_TEST_API_KEY" ] && [ -z "$PLANE_API_KEY" ]; then
-        export PLANE_API_KEY="$PLANE_TEST_API_KEY"
-    fi
-fi
+    # PLANE_WORKSPACE_SLUG
+    load_var_from_file "PLANE_WORKSPACE_SLUG" ".env" || load_var_from_file "PLANE_WORKSPACE_SLUG" ".env.test" || true
+    load_var_from_file "PLANE_TEST_WORKSPACE_SLUG" ".env" || load_var_from_file "PLANE_TEST_WORKSPACE_SLUG" ".env.test" || true
 
-# PLANE_WORKSPACE_SLUG / PLANE_TEST_WORKSPACE_SLUG
-if [ -z "$PLANE_WORKSPACE_SLUG" ]; then
-    if ! load_var_from_file "PLANE_WORKSPACE_SLUG" ".env"; then
-        if ! load_var_from_file "PLANE_WORKSPACE_SLUG" ".env.test"; then
-            if ! load_var_from_file "PLANE_TEST_WORKSPACE_SLUG" ".env"; then
-                load_var_from_file "PLANE_TEST_WORKSPACE_SLUG" ".env.test"
-            fi
-        fi
-    fi
-    # Map PLANE_TEST_WORKSPACE_SLUG to PLANE_WORKSPACE_SLUG if needed
-    if [ -n "$PLANE_TEST_WORKSPACE_SLUG" ] && [ -z "$PLANE_WORKSPACE_SLUG" ]; then
-        export PLANE_WORKSPACE_SLUG="$PLANE_TEST_WORKSPACE_SLUG"
-    fi
-fi
+    # PLANE_BASE_URL
+    load_var_from_file "PLANE_BASE_URL" ".env" || load_var_from_file "PLANE_BASE_URL" ".env.test" || true
+    load_var_from_file "PLANE_TEST_BASE_URL" ".env" || load_var_from_file "PLANE_TEST_BASE_URL" ".env.test" || true
 
-# PLANE_BASE_URL / PLANE_TEST_BASE_URL
-if [ -z "$PLANE_BASE_URL" ]; then
-    if ! load_var_from_file "PLANE_BASE_URL" ".env"; then
-        if ! load_var_from_file "PLANE_BASE_URL" ".env.test"; then
-            if ! load_var_from_file "PLANE_TEST_BASE_URL" ".env"; then
-                load_var_from_file "PLANE_TEST_BASE_URL" ".env.test"
-            fi
-        fi
-    fi
-    # Map PLANE_TEST_BASE_URL to PLANE_BASE_URL if needed
-    if [ -n "$PLANE_TEST_BASE_URL" ] && [ -z "$PLANE_BASE_URL" ]; then
-        export PLANE_BASE_URL="$PLANE_TEST_BASE_URL"
-    fi
-fi
+    # PLANE_OAUTH_PROVIDER_CLIENT_ID
+    load_var_from_file "PLANE_OAUTH_PROVIDER_CLIENT_ID" ".env" || load_var_from_file "PLANE_OAUTH_PROVIDER_CLIENT_ID" ".env.test" || true
 
-# PLANE_OAUTH_PROVIDER_CLIENT_ID
-if [ -z "$PLANE_OAUTH_PROVIDER_CLIENT_ID" ]; then
-    load_var_from_file "PLANE_OAUTH_PROVIDER_CLIENT_ID" ".env"
-    load_var_from_file "PLANE_OAUTH_PROVIDER_CLIENT_ID" ".env.test"
-fi
+    # PLANE_OAUTH_PROVIDER_CLIENT_SECRET
+    load_var_from_file "PLANE_OAUTH_PROVIDER_CLIENT_SECRET" ".env" || load_var_from_file "PLANE_OAUTH_PROVIDER_CLIENT_SECRET" ".env.test" || true
+}
 
-# PLANE_OAUTH_PROVIDER_CLIENT_SECRET
-if [ -z "$PLANE_OAUTH_PROVIDER_CLIENT_SECRET" ]; then
-    load_var_from_file "PLANE_OAUTH_PROVIDER_CLIENT_SECRET" ".env"
-    load_var_from_file "PLANE_OAUTH_PROVIDER_CLIENT_SECRET" ".env.test"
-fi
+load_env_vars
+
+# Map PLANE_TEST_* to PLANE_* if needed (only if PLANE_* not set)
+[ -n "$PLANE_TEST_API_KEY" ] && [ -z "$PLANE_API_KEY" ] && export PLANE_API_KEY="$PLANE_TEST_API_KEY"
+[ -n "$PLANE_TEST_WORKSPACE_SLUG" ] && [ -z "$PLANE_WORKSPACE_SLUG" ] && export PLANE_WORKSPACE_SLUG="$PLANE_TEST_WORKSPACE_SLUG"
+[ -n "$PLANE_TEST_BASE_URL" ] && [ -z "$PLANE_BASE_URL" ] && export PLANE_BASE_URL="$PLANE_TEST_BASE_URL"
 
 # Validate required variables for integration tests
 if [ -z "$PLANE_TEST_API_KEY" ]; then
