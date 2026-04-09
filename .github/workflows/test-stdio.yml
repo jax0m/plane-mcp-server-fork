@@ -37,15 +37,43 @@ jobs:
         env:
           PLANE_API_KEY: ${{ secrets.PLANE_TEST_API_KEY }}
           PLANE_WORKSPACE_SLUG: ${{ secrets.PLANE_TEST_WORKSPACE_SLUG }}
-        if: ${{ env.PLANE_API_KEY != '' && env.PLANE_WORKSPACE_SLUG != '' }}
+          PLANE_BASE_URL: ${{ secrets.PLANE_TEST_BASE_URL }}
         run: |
+          if [ -z "$PLANE_API_KEY" ]; then
+            echo "❌ ERROR: PLANE_TEST_API_KEY secret is not configured"
+            exit 1
+          fi
+          if [ -z "$PLANE_WORKSPACE_SLUG" ]; then
+            echo "❌ ERROR: PLANE_TEST_WORKSPACE_SLUG secret is not configured"
+            exit 1
+          fi
           echo "✓ Required secrets are configured"
+          echo "  PLANE_BASE_URL: ${PLANE_BASE_URL:-https://api.plane.so}"
+          echo "  PLANE_WORKSPACE_SLUG: $PLANE_WORKSPACE_SLUG"
+          echo "  PLANE_API_KEY: ${PLANE_API_KEY:0:10}..."
+
+      - name: Test API connectivity
+        env:
+          PLANE_API_KEY: ${{ secrets.PLANE_TEST_API_KEY }}
+          PLANE_BASE_URL: ${{ secrets.PLANE_TEST_BASE_URL || 'https://api.plane.so' }}
+        run: |
+          echo "Testing Plane API connectivity..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $PLANE_API_KEY" \
+            "$PLANE_BASE_URL/api/me/" || echo "000")
+          echo "API response code: $HTTP_CODE"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "⚠️ Warning: API returned $HTTP_CODE (expected 200)"
+            echo "   This may indicate an API key or workspace permission issue"
+          else
+            echo "✓ API connectivity verified"
+          fi
 
       - name: Run stdio integration tests
         env:
           PLANE_API_KEY: ${{ secrets.PLANE_TEST_API_KEY }}
           PLANE_WORKSPACE_SLUG: ${{ secrets.PLANE_TEST_WORKSPACE_SLUG }}
-          PLANE_BASE_URL: ${{ secrets.PLANE_TEST_BASE_URL }}
+          PLANE_BASE_URL: ${{ secrets.PLANE_TEST_BASE_URL || 'https://api.plane.so' }}
         run: |
           # Make test script executable
           chmod +x scripts/test_stdio.sh
