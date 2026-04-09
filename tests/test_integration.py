@@ -11,6 +11,7 @@ import asyncio
 import os
 import uuid
 
+import pytest
 from fastmcp import Client
 from fastmcp.client.transports import StreamableHttpTransport
 
@@ -72,7 +73,7 @@ async def run_integration_test():
         f"{config['mcp_url']}/http/api-key/mcp",
         headers={
             "x-workspace-slug": config["workspace_slug"],
-            "authorization": f"Bearer {config['api_key']}",
+            "Authorization": f"Bearer {config['api_key']}",
         },
     )
 
@@ -242,6 +243,7 @@ async def run_integration_test():
         print("Integration test passed!")
 
 
+@pytest.mark.integration
 def test_full_integration():
     """Pytest entry point - runs the async integration test."""
     asyncio.run(run_integration_test())
@@ -377,7 +379,7 @@ async def run_tools_availability_test():
         f"{config['mcp_url']}/http/api-key/mcp",
         headers={
             "x-workspace-slug": config["workspace_slug"],
-            "authorization": f"Bearer {config['api_key']}",
+            "Authorization": f"Bearer {config['api_key']}",
         },
     )
 
@@ -402,6 +404,7 @@ async def run_tools_availability_test():
         print("Tools availability test passed!")
 
 
+@pytest.mark.integration
 def test_tools_availability():
     """Pytest entry point - verifies all expected tools are registered."""
     asyncio.run(run_tools_availability_test())

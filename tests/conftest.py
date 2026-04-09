@@ -4,6 +4,15 @@ import os
 
 import pytest
 
+# Configure pytest-asyncio
+pytest_plugins = ("pytest_asyncio",)
+
+
+@pytest.fixture(scope="session")
+def anyio_backend():
+    """Set default async backend for pytest-asyncio."""
+    return "asyncio"
+
 
 def pytest_configure(config):
     """Register custom markers and configure skip logic."""

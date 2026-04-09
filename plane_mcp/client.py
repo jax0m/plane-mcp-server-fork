@@ -43,6 +43,14 @@ def get_plane_client_context() -> PlaneClientContext:
     api_key = os.getenv("PLANE_API_KEY", "")
     access_token = None
 
+    # Debug logging for CI troubleshooting
+    logger.debug(
+        "Client config:\n"
+        f"    base_url={base_url}\n"
+        f"    workspace_slug={workspace_slug}\n"
+        f"    api_key_len={len(api_key) if api_key else 0}"
+    )
+
     # Get access token from the OAuth provider (which handles all auth methods)
     stored_access_token: AccessToken | None = get_access_token()
     if stored_access_token:
