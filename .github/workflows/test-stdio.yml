@@ -14,6 +14,7 @@ jobs:
   stdio-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    environment: testing-env # Uncomment if using environment secrets
 
     steps:
       - name: Checkout code
