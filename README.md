@@ -231,14 +231,47 @@ The server provides comprehensive tools for interacting with Plane. All tools us
 
 ### Running Tests
 
+The project includes two types of tests:
+
+#### Stdio Tests (Recommended for CI/CD)
+
+Stdio tests run the MCP server directly without requiring an HTTP server. These are the tests run in GitHub Actions:
+
 ```bash
-pytest
+# Run stdio tests using the dedicated script
+./scripts/test_stdio.sh -v
+
+# Or run directly with pytest
+uv run pytest tests/test_stdio_integration.py -v
 ```
+
+**Required environment variables:**
+
+- `PLANE_API_KEY` - Your Plane API key
+- `PLANE_WORKSPACE_SLUG` - Your workspace slug
+- `PLANE_BASE_URL` - Plane API URL (default: `https://api.plane.so`)
+
+#### HTTP Transport Tests
+
+HTTP tests require the MCP server to be running locally:
+
+```bash
+# Run all HTTP-based tests (starts server automatically)
+./scripts/test_local.sh -v
+
+# Or run specific test files
+uv run pytest tests/test_integration.py -v
+```
+
+See [tests/README.md](tests/README.md) for detailed test documentation.
 
 ### Code Formatting
 
 ```bash
-black plane_mcp/
+# Format
+ruff format plane_mcp/
+
+# Lint
 ruff check plane_mcp/
 ```
 

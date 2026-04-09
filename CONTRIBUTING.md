@@ -62,7 +62,10 @@ uv pip install -e ".[dev]"
 
 ```bash
 cp .env.test .env.test.local
-# Edit .env.test.local with your Plane API credentials
+# Edit .env.test.local with your Plane API credentials:
+# PLANE_TEST_API_KEY=your_api_key
+# PLANE_TEST_WORKSPACE_SLUG=your_workspace_slug
+# PLANE_TEST_BASE_URL=https://api.plane.so
 ```
 
 4. Run the server locally (stdio mode)
@@ -74,8 +77,18 @@ PLANE_API_KEY="your-api-key" PLANE_WORKSPACE_SLUG="your-workspace" python -m pla
 5. Run the tests
 
 ```bash
-export $(cat .env.test.local | xargs) && pytest tests/ -v
+# Stdio tests (recommended - no server needed, used in CI)
+export $(cat .env.test.local | xargs) && ./scripts/test_stdio.sh -v
+
+# HTTP tests (starts local server automatically)
+export $(cat .env.test.local | xargs) && ./scripts/test_local.sh -v
+
+# Run specific test files
+uv run pytest tests/test_stdio_integration.py -v
+uv run pytest tests/test_integration.py -v
 ```
+
+See [tests/README.md](tests/README.md) for detailed test documentation.
 
 ## Missing a Feature?
 
